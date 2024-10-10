@@ -12,3 +12,6 @@ Dataset used : [Amazon Phone Sales Dataset](https://www.kaggle.com/datasets/Prom
 
 ## Working
 Write a simple review focused on a phone and submit to get results.
+
+>[!NOTE]
+>In order to alter the model, check the .ipynb file and save new model locally to run new results.
