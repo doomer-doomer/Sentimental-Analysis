@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --tertiary-color: #e74c3c;
+            --background-color: #ecf0f1;
+            --text-color: #34495e;
+            --positive-color: #27ae60;
+            --negative-color: #c0392b;
+            --mixed-color: #f39c12;
+        }
+        body, html {
+            font-family: 'Helvetica', 'Arial', sans-serif; /* Use Helvetica as primary font */
+            margin: 0;
+            padding: 0;
+        
+            background-color: white;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+    display: grid;
+    grid-template-columns: minmax(300px, 1fr) 1fr; /* Two columns for left and right */
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.container-explanation {
+    grid-column: 1 / -1; /* Make this section occupy the full width */
+    background-color: var(--background-color); /* Soft Gray for explanation */
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.container-explanation h1 {
+    font-size: 1.8em;
+    margin: 20px auto;
+}
+
+        .container-left, .container-right {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .container-left {
+            display: flex;
+            flex-direction: column;
+        }
+        .container-left h3 {
+            color: #0D92F4;
+            font-size: 2em;
+            margin: 0;
+        }
+        h2 {
+            color: #0D92F4;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            justify-content: center;
+        }
+        h2 i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        textarea {
+            width: 500px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            resize: none;
+            height: 100px;
+        }
+        textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        input[type="submit"] {
+            background-color: #0D92F4;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #0054a8;
+            transform: translateY(-2px);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+            color: white;
+        }
+        .result.positive { background-color: var(--positive-color); }
+        .result.negative { background-color: var(--negative-color); }
+        .result.mixed { background-color: var(--mixed-color); }
+        .sentiment-result {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .sentiment-icon {
+            font-size: 2em;
+            margin-right: 10px;
+        }
+        .sentiment-label {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .review-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .review-container {
+            grid : 1fr / 1fr;
+            min-width: 100%;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .review-container h4 {
+            margin-top: 0;
+            color: #000;
+        }
+        .review-button p{
+            margin: 0;
+            text-decoration: underline;
+        }
+        .review-button {
+            width: 100%;
+            margin-bottom: 5px;
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+        .review-button:hover {
+            transform: translateY(-2px);
+        }
+        .positive-button { background-color: var(--positive-color); }
+        .negative-button { background-color: var(--negative-color); }
+        .mixed-button { background-color: var(--mixed-color); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="container-left">
+            <h3>🕵️‍♂️ Sentiment Analysis</h3>
+            <p>Enter a phone review to analyze the sentiment:</p>
+            <form action="/" method="POST">
+                <textarea name="review" placeholder="Enter your phone review here..." required></textarea>
+                <br>
+                <input type="submit" value="Analyze Sentiment">
+            </form>
+            
+            {% if result %}
+                <div class="result {% if result == 'Positive' %}positive{% elif result == 'Negative' %}negative{% else %}mixed{% endif %}">
+                    <div class="sentiment-result">
+                        <div class="sentiment-icon">
+                            {% if result == "Positive" %}
+                                <i class="fas fa-smile"></i>
+                            {% elif result == "Negative" %}
+                                <i class="fas fa-frown"></i>
+                            {% else %}
+                                <i class="fas fa-meh"></i>
+                            {% endif %}
+                        </div>
+                        <div class="sentiment-label">{{ result }}</div>
+                    </div>
+                    <h4>Review Text:</h4>
+                    <p>{{ review }}</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="container-right">
+            <div class="review-section">
+                <div class="review-container">
+                    <h4>Positive Reviews</h4>
+                    <button class="review-button positive-button" onclick="setReview('I love this phone! The battery life is amazing, and the screen is super clear.')"><i class="fas fa-thumbs-up"></i> Love it!</button>
+                    <button class="review-button positive-button" onclick="setReview('Great camera quality and fast performance. Highly recommended!')"><i class="fas fa-camera"></i> Amazing camera</button>
+                    <button class="review-button positive-button" onclick="setReview('Best phone I\'ve ever owned. Everything works perfectly and it feels premium.')"><i class="fas fa-star"></i> Best phone ever</button>
+                </div>
+                <div class="review-container">
+                    <h4>Negative Reviews</h4>
+                    <button class="review-button negative-button" onclick="setReview('Terrible battery life, and it keeps freezing. Not worth the money.')"><i class="fas fa-battery-empty"></i> Poor battery</button>
+                    <button class="review-button negative-button" onclick="setReview('The phone overheats quickly and the camera quality is very poor.')"><i class="fas fa-fire"></i> Overheating issues</button>
+                    <button class="review-button negative-button" onclick="setReview('I\'m really disappointed. The phone lags constantly, and the display is not great.')"><i class="fas fa-thumbs-down"></i> Disappointing</button>
+                </div>
+                <div class="review-container">
+                    <h4>Mixed Reviews</h4>
+                    <button class="review-button mixed-button" onclick="setReview('The phone is okay, but the battery life could be better.')"><i class="fas fa-balance-scale"></i> Decent, but...</button>
+                    <button class="review-button mixed-button" onclick="setReview('It\'s a decent phone for the price, but the camera isn\'t the best.')"><i class="fas fa-camera-retro"></i> Good value</button>
+                    <button class="review-button mixed-button" onclick="setReview('The screen is nice, but the phone gets hot sometimes.')"><i class="fas fa-thermometer-half"></i> Nice screen, but hot</button>
+                </div>
+            </div>
+        </div>
+        <div class="container-explanation">
+            <h1 class="explanation-title">How the Sentiment Analysis Works</h1>
+            <div class="explanation-content">
+                <p>The sentiment analysis system processes user reviews by following these steps:</p>
+                <ul>
+                    <li><strong>Text Preprocessing:</strong> 
+                        The input text is cleaned to remove unwanted characters, HTML tags, and non-alphabetic characters. 
+                        This standardizes the text for further analysis, ensuring consistency in the data. 
+                        For example, a review like "<em>I love this phone!</em>" is transformed into "i love this phone".</li>
+                        
+                    <li><strong>Feature Extraction:</strong> 
+                        Key features are extracted from the cleaned text using techniques such as tokenization and vectorization. 
+                        The <strong>TF-IDF</strong> (Term Frequency-Inverse Document Frequency) method is used to convert the text into a numerical representation that captures the importance of words in relation to the entire dataset.</li>
+                        
+                    <li><strong>Model Training:</strong> 
+                        The extracted features are fed into a <strong>Logistic Regression</strong> model trained on a labeled dataset. 
+                        In this case, the dataset consists of over 400,000 Amazon reviews of mobile phones, with ratings that indicate sentiment. 
+                        Reviews with a rating greater than 3 are classified as Positive, while those with a rating of 3 or less are Negative.</li>
+                        
+                    <li><strong>Prediction:</strong> 
+                        The trained model predicts the sentiment of the user's review based on the learned patterns from the training data. 
+                        For instance, the input "Terrible battery life!" may be classified as Negative, while "Amazing camera quality!" is classified as Positive.</li>
+                </ul>
+                <p>This system leverages <strong>Natural Language Processing</strong> (NLP) techniques to analyze and interpret the sentiment behind user reviews effectively. 
+                   By understanding the sentiments expressed in customer feedback, businesses can enhance their products and services based on user preferences and experiences.</p>
+                <h3>Dataset Information</h3>
+                <p>The dataset used for training the model is the <strong>Amazon Unlocked Mobile</strong> dataset, which contains:</p>
+                <ul>
+                    <li>Over 400,000 reviews on various mobile phones.</li>
+                    <li>Features including product names, ratings, review texts, and user feedback.</li>
+                    <li>A diverse range of sentiments covering different user experiences, from highly positive to extremely negative.</li>
+                </ul>
+                <h3>Applications</h3>
+                <p>This sentiment analysis system can be applied in various fields, such as:</p>
+                <ul>
+                    <li><strong>Market Research:</strong> Understanding customer preferences and trends based on their reviews.</li>
+                    <li><strong>Product Improvement:</strong> Identifying areas for enhancement by analyzing negative feedback.</li>
+                    <li><strong>Brand Monitoring:</strong> Tracking public sentiment towards products or brands over time.</li>
+                    <li><strong>Customer Support:</strong> Automating responses to reviews based on sentiment classification.</li>
+                </ul>
+            </div>
+        </div>
+        
+        
+
+    </div>
+
+    
+
+    <script>
+        function setReview(review) {
+            document.querySelector('textarea').value = review;
+            document.querySelector('form').submit();
+        }
+    </script>
+</body>
+</html>
